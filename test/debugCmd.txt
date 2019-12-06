@@ -1,0 +1,70 @@
+打开相关模块Log
+
+echo 7 > /proc/sys/kernel/printk
+
+/3rd/bin/wpa_supplicant/common/wpa_cli -iwlan0 log_level debug
+
+/3rd/bin/wpa_supplicant/common/iwpriv wlan0 set Debug=3
+
+
+mw.wifi.sdl 1 3
+
+第一步：
+
+1、ifconfig 看看wlan口状态
+
+2、 
+cd /3rd/bin/wpa_supplicant/common
+./wpa_cli -i wlan0 scan_r
+./wpa_cli -i wlan0 scan
+./wpa_cli -i wlan0 log_level debug
+./wpa_cli -i wlan0 scan_r
+./wpa_cli -i wlan0 scan//查看AP层是否有结果
+（1）>scan
+
+（2）>scan_results
+看看有没有wifi列表输出，如果没有wifi列表输出
+
+第二步：
+
+1、/3rd/bin/wpa_supplicant/common/iwlist wlan0 scanning
+2、/3rd/bin/wpa_supplicant/common/iwlist wlan0 accesspoints
+
+cd /3rd/bin/wpa_supplicant/common
+./wpa_cli -i wlan0 scan_r
+./wpa_cli -i wlan0 scan
+./wpa_cli -i wlan0 log_level debug
+./wpa_cli -i wlan0 scan_r
+./wpa_cli -i wlan0 scan
+
+
+查看WiFi信道命令
+/3rd/bin/wpa_supplicant/common/wpa_cli -iwlan0 get_capability freq
+
+1、/3rd/bin/wpa_supplicant/common/wpa_cli -iwlan0 log_level debug
+2、/3rd/bin/wpa_supplicant/common/tcpdump -i any -X –s 0 -w /3rd_rw/wlan0.pcap
+
+
+cat /etc/resolv.conf （看DNS）
+
+traceroute 第一行就是自己的网关
+
+
+
+
+
+如果要连接加密方式是[WPA-PSK-CCMP+TKIP][WPA2-PSK-CCMP+TKIP][ESS] (wpa加密)，wifi名称是name，wifi密码是：psk。
+/3rd/bin/wpa_supplicant/common/wpa_cli -i wlan0 set_network 0 ssid '"name"'
+/3rd/bin/wpa_supplicant/common/wpa_cli -i wlan0 set_network 0 psk '"psk"'
+/3rd/bin/wpa_supplicant/common/wpa_cli -i wlan0 enable_network 0
+
+如果要连接加密方式是[WEP][ESS] (wep加密)，wifi名称是name，wifi密码是psk。
+/3rd/bin/wpa_supplicant/common/wpa_cli -i wlan0 set_network 0 ssid '"name"'
+/3rd/bin/wpa_supplicant/common/wpa_cli -i wlan0 set_network 0 key_mgmt NONE
+/3rd/bin/wpa_supplicant/common/wpa_cli -i wlan0 set_network 0 wep_key0 '"psk"'
+/3rd/bin/wpa_supplicant/common/wpa_cli -i wlan0 enable_network 0
+
+如果要连接加密方式是[ESS] (无加密)，wifi名称是name。
+/3rd/bin/wpa_supplicant/common/wpa_cli -i wlan0 set_network 0 ssid '"name"'
+/3rd/bin/wpa_supplicant/common/wpa_cli -i wlan0 set_network 0 key_mgmt NONE
+/3rd/bin/wpa_supplicant/common/wpa_cli -i wlan0 enable_network 0
