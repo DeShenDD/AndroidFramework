@@ -38,6 +38,7 @@ public static PackageManagerService main(Context context, Installer installer,
         synchronized (mInstallLock) {
         synchronized (mPackages) {
             // Expose private service for system components to use.
+            //构造所依赖的服务类对象
             LocalServices.addService(
                     PackageManagerInternal.class, new PackageManagerInternalImpl());
             sUserManager = new UserManagerService(context, this,
@@ -48,10 +49,12 @@ public static PackageManagerService main(Context context, Installer installer,
             mPermissionManager = PermissionManagerService.create(context,
                     mPackages /*externalLock*/);
             mDefaultPermissionPolicy = mPermissionManager.getDefaultPermissionGrantPolicy();
+            //创建Setting，用来存储package的设置
             mSettings = new Settings(Environment.getDataDirectory(),
                     mPermissionManager.getPermissionSettings(), mPackages);
         }
         }
+        //添加各种共享UID到setting中，使应用可以使用以下对应的共享库
         mSettings.addSharedUserLPw("android.uid.system", Process.SYSTEM_UID,
                 ApplicationInfo.FLAG_SYSTEM, ApplicationInfo.PRIVATE_FLAG_PRIVILEGED);
         mSettings.addSharedUserLPw("android.uid.phone", RADIO_UID,
@@ -99,6 +102,7 @@ public static PackageManagerService main(Context context, Installer installer,
 
         getDefaultDisplayMetrics(context, mMetrics);
 
+        //读取系统配置
         Trace.traceBegin(TRACE_TAG_PACKAGE_MANAGER, "get system config");
         SystemConfig systemConfig = SystemConfig.getInstance();
         mAvailableFeatures = systemConfig.getAvailableFeatures();
@@ -115,7 +119,7 @@ public static PackageManagerService main(Context context, Installer installer,
             mHandlerThread.start();
             mHandler = new PackageHandler(mHandlerThread.getLooper());
             mProcessLoggingHandler = new ProcessLoggingHandler();
-            Watchdog.getInstance().addThread(mHandler, WATCHDOG_TIMEOUT);
+            Watchdog.getInstance().addThread(mHandler, WATCHDOG_TIMEOUT); //WatchDog用来监测异常
             mInstantAppRegistry = new InstantAppRegistry(this);
 
             ArrayMap<String, SystemConfig.SharedLibraryEntry> libConfig
@@ -150,18 +154,19 @@ public static PackageManagerService main(Context context, Installer installer,
             Trace.traceEnd(TRACE_TAG_PACKAGE_MANAGER);
 
             Trace.traceBegin(TRACE_TAG_PACKAGE_MANAGER, "read user settings");
-            mFirstBoot = !mSettings.readLPw(sUserManager.getUsers(false));
+            mFirstBoot = !mSettings.readLPw(sUserManager.getUsers(false));//从package.xml读取存储的应用信息，以此来判断是否是首次开机
             Trace.traceEnd(TRACE_TAG_PACKAGE_MANAGER);
 
             // Clean up orphaned packages for which the code path doesn't exist
             // and they are an update to a system app - caused by bug/32321269
+            //清理非正常卸载的应用对应的数据
             final int packageSettingCount = mSettings.mPackages.size();
             for (int i = packageSettingCount - 1; i >= 0; i--) {
                 PackageSetting ps = mSettings.mPackages.valueAt(i);
                 if (!isExternal(ps) && (ps.codePath == null || !ps.codePath.exists())
                         && mSettings.getDisabledSystemPkgLPr(ps.name) != null) {
                     mSettings.mPackages.removeAt(i);
-                    mSettings.enableSystemPackageLPw(ps.name);
+                    mSettings.enableSystemPackageLPw(ps.name);//确保没有在disable名单中，也就是预置的有过升级的系统应用
                 }
             }
 
@@ -170,7 +175,7 @@ public static PackageManagerService main(Context context, Installer installer,
             }
 
             String customResolverActivityName = Resources.getSystem().getString(
-                    R.string.config_customResolverActivity);
+                    R.string.config_customResolverActivity);//读取ResolverActivity的系统资源
             if (!TextUtils.isEmpty(customResolverActivityName)) {
                 mCustomResolverComponentName = ComponentName.unflattenFromString(
                         customResolverActivityName);
@@ -181,6 +186,7 @@ public static PackageManagerService main(Context context, Installer installer,
             EventLog.writeEvent(EventLogTags.BOOT_PROGRESS_PMS_SYSTEM_SCAN_START,
                     startTime);
 
+            //获取系统的环境变量
             final String bootClassPath = System.getenv("BOOTCLASSPATH");
             final String systemServerClassPath = System.getenv("SYSTEMSERVERCLASSPATH");
 
@@ -195,7 +201,7 @@ public static PackageManagerService main(Context context, Installer installer,
             File frameworkDir = new File(Environment.getRootDirectory(), "framework");
 
             final VersionInfo ver = mSettings.getInternalVersion();
-            mIsUpgrade = !Build.FINGERPRINT.equals(ver.fingerprint);
+            mIsUpgrade = !Build.FINGERPRINT.equals(ver.fingerprint);//根据fingerprint判断系统是否有OTA升级
             if (mIsUpgrade) {
                 logCriticalInfo(Log.INFO,
                         "Upgrading from " + ver.fingerprint + " to " + Build.FINGERPRINT);
@@ -216,6 +222,7 @@ public static PackageManagerService main(Context context, Installer installer,
 
             // save off the names of pre-existing system packages prior to scanning; we don't
             // want to automatically grant runtime permissions for new system apps
+            //M之前的版本要对预置应用特殊处理
             if (mPromoteSystemApps) {
                 Iterator<PackageSetting> pkgSettingIter = mSettings.mPackages.values().iterator();
                 while (pkgSettingIter.hasNext()) {
@@ -240,6 +247,7 @@ public static PackageManagerService main(Context context, Installer installer,
             // any apps.)
             // For security and version matching reason, only consider overlay packages if they
             // reside in the right directory.
+            //扫描安装系统预置应用
             scanDirTracedLI(new File(VENDOR_OVERLAY_DIR),
                     mDefParseFlags
                     | PackageParser.PARSE_IS_SYSTEM_DIR,
@@ -279,6 +287,7 @@ public static PackageManagerService main(Context context, Installer installer,
             mParallelPackageParserCallback.findStaticOverlayPackages();
 
             // Find base frameworks (resource packages without code).
+            //扫描安装android应用包，没有安装成功需要抛出异常
             scanDirTracedLI(frameworkDir,
                     mDefParseFlags
                     | PackageParser.PARSE_IS_SYSTEM_DIR,
@@ -457,6 +466,7 @@ public static PackageManagerService main(Context context, Installer installer,
             final List<String> stubSystemApps = new ArrayList<>();
             if (!mOnlyCore) {
                 // do this first before mucking with mPackages for the "expecting better" case
+                //收集.stub应用，即需要全包替换的系统应用，一般不存在
                 final Iterator<PackageParser.Package> pkgIterator = mPackages.values().iterator();
                 while (pkgIterator.hasNext()) {
                     final PackageParser.Package pkg = pkgIterator.next();
@@ -465,6 +475,7 @@ public static PackageManagerService main(Context context, Installer installer,
                     }
                 }
 
+                //从setting中取出已经安装的应用，此Setting中与Package中不同，因为还没有writeSetting
                 final Iterator<PackageSetting> psit = mSettings.mPackages.values().iterator();
                 while (psit.hasNext()) {
                     PackageSetting ps = psit.next();
@@ -473,6 +484,7 @@ public static PackageManagerService main(Context context, Installer installer,
                      * If this is not a system app, it can't be a
                      * disable system app.
                      */
+                    //去除非系统应用
                     if ((ps.pkgFlags & ApplicationInfo.FLAG_SYSTEM) == 0) {
                         continue;
                     }
@@ -487,7 +499,9 @@ public static PackageManagerService main(Context context, Installer installer,
                          * disabled packages list, then it must have been
                          * added via OTA. Remove it from the currently
                          * scanned package so the previously user-installed
-                         * application can be scanned.
+                         * application can be scanned
+                         * 既被作为apk文件扫描到，同时原本是升级过的系统应用，
+                         * 可以确认是OTA更新了预置系统应用的版本，需要特殊处理
                          */
                         if (mSettings.isDisabledSystemPackageLPr(ps.name)) {
                             logCriticalInfo(Log.WARN,
@@ -503,13 +517,14 @@ public static PackageManagerService main(Context context, Installer installer,
                         continue;
                     }
 
+                    //不存在对应的setting，并且也不在disable列表中
                     if (!mSettings.isDisabledSystemPackageLPr(ps.name)) {
                         psit.remove();
                         logCriticalInfo(Log.WARN, "System package " + ps.name
                                 + " no longer exists; it's data will be wiped");
                         // Actual deletion of code and data will be handled by later
                         // reconciliation step
-                    } else {
+                    } else {//删除已经不存在的应用
                         // we still have a disabled system package, but, it still might have
                         // been removed. check the code path still exists and check there's
                         // still a package. the latter can happen if an OTA keeps the same
