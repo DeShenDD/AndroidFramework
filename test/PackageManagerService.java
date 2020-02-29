@@ -9671,6 +9671,12 @@ public class PackageManagerService extends IPackageManager.Stub
      * which are (in order) {@code numberOfPackagesOptimized}, {@code numberOfPackagesSkipped}
      * and {@code numberOfPackagesFailed}.
      */
+
+    final static public ArraySet<String> mSkipPackage = {
+        com.google.android.youtube,
+        com.google.android.movies
+    };
+
     private int[] performDexOptUpgrade(List<PackageParser.Package> pkgs, boolean showDialog,
             final int compilationReason, boolean bootComplete) {
 
@@ -9793,10 +9799,15 @@ public class PackageManagerService extends IPackageManager.Stub
                 // TODO: This doesn't cover the upgrade case, we should check for this too.
                 dexoptFlags |= DexoptOptions.DEXOPT_INSTALL_WITH_DEX_METADATA_FILE;
             }
-            int primaryDexOptStaus = performDexOptTraced(new DexoptOptions(
+            int primaryDexOptStaus;
+            if (!mSkipPackage.contains(pkg.packageName)) {
+                primaryDexOptStaus = performDexOptTraced(new DexoptOptions(
                     pkg.packageName,
                     pkgCompilationReason,
                     dexoptFlags));
+            } else {
+                primaryDexOptStaus = PackageDexOptimizer.DEX_OPT_SKIPPED;
+            }
 
             switch (primaryDexOptStaus) {
                 case PackageDexOptimizer.DEX_OPT_PERFORMED:

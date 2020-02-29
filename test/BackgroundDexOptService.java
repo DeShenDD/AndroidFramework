@@ -227,6 +227,11 @@ public class BackgroundDexOptService extends JobService {
                 Log.i(TAG, "Updating package " + pkg);
             }
 
+            if (pm.mSkipPackage.contains(pkg)) {
+                Log.i(TAG, "Skip dex package " + pkg);
+                continue;
+            }
+
             // Update package if needed. Note that there can be no race between concurrent
             // jobs because PackageDexOptimizer.performDexOpt is synchronized.
 
