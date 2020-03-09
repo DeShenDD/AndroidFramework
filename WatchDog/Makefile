@@ -2,15 +2,15 @@ CC := g++
 INCLUDE := -Iinclude/
 SRC := $(wildcard  *.cpp)
 OBJS :=  $(patsubst %cpp, %o, $(SRC)) 
-CFLAGS := -std=c++14
+CFLAGS := -g -Wall  
 
 TARGET:= main
 
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CC) $(CFLAGS)  $^ -o $@
+	$(CC) -std=c++14 $(CFLAGS)  $^ -o $@
 
-%o:%cpp
-	$(CC) -c $(CFLAGS) $(INCLUDE) $^ -o $@
+$(OBJS): %o:%cpp
+	$(CC) -std=c++14 -c $(CFLAGS) $(INCLUDE) $< -o $@
 

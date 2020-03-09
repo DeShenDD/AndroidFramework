@@ -1,7 +1,7 @@
 #include <iostream>
 #include <thread>
 #include <unistd.h>
-#include "WatchDog.h"
+#include "include/WatchDog.h"
 
 using namespace std;
 using namespace chrono;
@@ -45,7 +45,7 @@ void WatchDog::addHandler(Handler& Handler)
 int WatchDog::getMaxCostTime(auto  &startTime)
 {
     int state = COMPLETE;
-    for(int i=0; i<mMonitor.size(); i++) {
+    for(unsigned int i=0; i<mMonitor.size(); i++) {
         state = max(state, mMonitor[i]->getState(mComplete, startTime));
     }
 
