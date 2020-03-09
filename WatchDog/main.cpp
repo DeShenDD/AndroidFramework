@@ -1,6 +1,5 @@
 #include <iostream>
 #include "MainThread.h"
-#include "WatchDog.h"
 
 using namespace std;
 

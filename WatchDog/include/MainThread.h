@@ -8,5 +8,9 @@ public:
 
     ~MainThread();
 
-    void monitor();
+private:
+
+    virtual  void checkMonitor();
+
+    static void MainTest();
 };

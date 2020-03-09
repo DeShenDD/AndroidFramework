@@ -1,8 +1,9 @@
-#include "Monitor.h"
+#include <chrono>
+#include "include/Monitor.h"
 
 using namespace std;
 
-Monitor::int getState(int flag, long startTime)
+int Monitor::getState(int flag, auto startTime)
 {
     if(flag) {
         return COMPLETE;
@@ -17,4 +18,3 @@ Monitor::int getState(int flag, long startTime)
 
     return OVERTIME;
 }
-

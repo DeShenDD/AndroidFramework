@@ -1,12 +1,14 @@
-#include "MainThread.h"
+#include <iostream>
 #include <thread>
 #include <mutex>
+#include <unistd.h>
+#include "MainThread.h"
 
 using namespace std;
 
-static mutex mMutex;
+static std::mutex mMutex;
 
-MainThread::void ()
+void MainThread::MainTest()
 {
     while(1)
     {
@@ -26,7 +28,7 @@ MainThread::~MainThread()
 }
 
 
-MainThread::void monitor()
+void MainThread::checkMonitor()
 {
     mMutex.lock();
     mMutex.unlock();
