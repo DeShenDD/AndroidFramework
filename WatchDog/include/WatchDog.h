@@ -1,10 +1,10 @@
-#ifndef WATCH_DOG_H
-#define WATCH_DOG_H
+#ifndef _WATCH_DOG_H
+#define _WATCH_DOG_H
 
 #include <iostream>
 #include <vector>
 #include "Monitor.h"
-#include "Handler.h"
+//#include "Handler.h"
 #include "state.h"
 
 
@@ -12,39 +12,45 @@ class WatchDog {
 
 public:
 
-    WatchDog();
-    ~WatchDog();
+    static WatchDog* getInstance() {
+        if (mWatchDog == nullptr) {
+            mWatchDog = new WatchDog();
+        }
 
-    static WatchDog getInstance();
+        return mWatchDog;
+    }
 
     void addMonitor(Monitor* mMonitor);
 
-    void addHandler(Handler& mHandler);
-
+    //void addHandler(Handler& mHandler);
 private:
 
-    static void WatchDogMainThread();
+    WatchDog();
+    ~WatchDog() {}
 
-    int getMaxCostTime(auto  &startTime);
+    static WatchDog* mWatchDog;
+
+    void WatchDogMainThread();
+
+    int getMaxCostTime();
 
     void triggerAllMonitorObserve();
 
-    static std::vector<Monitor*> mMonitorQueue;
+    std::vector<Monitor*> mMonitorQueue;
 
-    static std::vector<Handler> mHandlerQueue;
+    //std::vector<Handler> mHandlerQueue;
 
-    static std::vector<Monitor*> mMonitor;
+    std::vector<Monitor*> mMonitor;
 
-    static int mComplete;
+    int mComplete;
 
-    static int mBeginCheck;
+    int mBeginCheck;
 
     //auto mStartTime;
 
     //Monitor mCurrentMonitor;
 
-    static void checkAllMonitorObserve();
+    void checkAllMonitorObserve();
 };
-
 
 #endif

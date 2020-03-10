@@ -1,16 +1,16 @@
 #include "Monitor.h"
 
-class MainThread : Monitor {
+class MainThread : public Monitor {
 
 public:
 
     MainThread();
 
-    ~MainThread();
+    ~MainThread() {};
 
 private:
 
     virtual  void checkMonitor();
 
-    static void MainTest();
+    void MainTest();
 };

@@ -3,6 +3,7 @@
 #include <mutex>
 #include <unistd.h>
 #include "include/MainThread.h"
+#include "include/WatchDog.h"
 
 using namespace std;
 
@@ -14,22 +15,25 @@ void MainThread::MainTest()
     {
         sleep(5);
         cout << "MainThread" << endl;
+        mMutex.lock();
+        sleep(155);
+        mMutex.unlock();
     }
 }
 
 MainThread::MainThread()
 {
-    thread test(MainTest);
+    thread test(&MainThread::MainTest, this);
     test.detach();
-}
-
-MainThread::~MainThread()
-{
+ 
+    WatchDog::getInstance()->addMonitor(this);
 }
 
 
 void MainThread::checkMonitor()
 {
     mMutex.lock();
+    cout<<"CheckMonitor"<<endl;
     mMutex.unlock();
+    cout<<"CheckMonitorUnlock"<<endl;
 }

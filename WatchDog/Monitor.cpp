@@ -4,12 +4,22 @@
 using namespace std;
 using namespace chrono;
 
-int Monitor::getState(int flag, auto startTime)
+Monitor::Monitor()
+{
+}
+
+Monitor::~Monitor()
+{
+}
+
+int Monitor::getState(int flag)
 {
     if(flag) {
         return COMPLETE;
     } else {
-        long latency = chrono::high_resolution_clock::now() - startTime;
+        long long endTime = time(NULL);
+        long long latency = endTime - mStartTime;
+        cout << latency <<endl;
         if (latency < mWaitTime/2) {
             return WAITING;
         } else if (latency < mWaitTime) {
@@ -19,3 +29,4 @@ int Monitor::getState(int flag, auto startTime)
 
     return OVERTIME;
 }
+

@@ -2,21 +2,25 @@
 #define _MONITOR_H_
 #include <iostream>
 #include "state.h"
+#include <time.h>
+#include <sys/timeb.h>
 
-class Monitor{
+class Monitor {
 
 public:
     Monitor();
 
     virtual ~Monitor();
 
-    int getState(int flag, auto startTime);
+    int getState(int flag);
 
-    virtual void checkMonitor()=0;
+    virtual void checkMonitor() {}
+
+    long long  mStartTime;
 
 private:
 
-    long mWaitTime = 60;
+    long long mWaitTime = 60;
 
 };
 

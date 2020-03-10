@@ -6,16 +6,18 @@
 using namespace std;
 using namespace chrono;
 
-static WatchDog *mWatchDog;
+WatchDog* WatchDog::mWatchDog = nullptr;
 
-WatchDog *getInstance()
+/*static WatchDog *mWatchDog;
+
+static WatchDog *getInstance()
 {
     if (mWatchDog == nullptr) {
         mWatchDog = new WatchDog();
     }
 
     return mWatchDog;
-}
+}*/
 
 
 WatchDog::WatchDog()
@@ -23,30 +25,24 @@ WatchDog::WatchDog()
     mBeginCheck = 0;
     mComplete = 1;
 
-    std::thread threadMain(WatchDogMainThread);
+    std::thread threadMain(&WatchDog::WatchDogMainThread, this);
     threadMain.detach();
-    std::thread threadSecond(checkAllMonitorObserve);
+    std::thread threadSecond(&WatchDog::checkAllMonitorObserve, this);
     threadSecond.detach();
 }
 
-WatchDog::~WatchDog()
-{
-}
 
 void WatchDog::addMonitor(Monitor* Monitor)
 {
     mMonitorQueue.push_back(Monitor);
 }
 
-void WatchDog::addHandler(Handler& Handler)
-{
-}
 
-int WatchDog::getMaxCostTime(auto  &startTime)
+int WatchDog::getMaxCostTime()
 {
     int state = COMPLETE;
-    for(unsigned int i=0; i<mMonitor.size(); i++) {
-        state = max(state, mMonitor[i]->getState(mComplete, startTime));
+    for(unsigned int i=0; i<mMonitor.size()-1; i++) {
+        state = max(state, mMonitor[i]->getState(mComplete));
     }
 
     return state;
@@ -56,8 +52,9 @@ int WatchDog::getMaxCostTime(auto  &startTime)
 void WatchDog::checkAllMonitorObserve()
 {
     int mMoninorCount;
+    cout<<"Begin to run checkAllMonitorObserve."<<endl;
     while(1) {
-        if (!mBeginCheck) {
+        if (!mBeginCheck || mComplete) {
             continue;
         } else {
             mMoninorCount = mMonitor.size();
@@ -65,6 +62,7 @@ void WatchDog::checkAllMonitorObserve()
             Monitor *mCurrentMonitor;
             for (int i=0; i<mMoninorCount; i++) {
                 mCurrentMonitor = mMonitor[i];
+                mCurrentMonitor->mStartTime = time(NULL);
                 mCurrentMonitor->checkMonitor();
             }
 
@@ -82,6 +80,7 @@ void WatchDog::triggerAllMonitorObserve()
         mMoninorCount = mMonitorQueue.size();
         for (int i=0; i<mMoninorCount; i++) {
             mMonitor.push_back(mMonitorQueue[i]);
+            cout<<&mMonitorQueue[i]<<endl;
         }
     }
 
@@ -100,11 +99,12 @@ void WatchDog::triggerAllMonitorObserve()
 
 void WatchDog::WatchDogMainThread()
 {
+    cout<<"Begin to run WatchDogMainThread."<<endl;
     while(1) {
-        auto mStartTime = system_clock::now();
-        checkAllMonitorObserve();
-        sleep(30);
-        int state = (*mWatchDog).getMaxCostTime(mStartTime);
+        //long mStartTime = 0;//(long)system_clock::now();
+        triggerAllMonitorObserve();
+        sleep(10);
+        int state = getMaxCostTime();
         switch (state)
         {
             case COMPLETE: cout<<"all normal!"<< state << endl; break;
@@ -114,9 +114,7 @@ void WatchDog::WatchDogMainThread()
             default: cout<<"state error!"<< state << endl; break;
         }
 
-        mBeginCheck = 0;
-
-        
+        mBeginCheck = 0; 
     }
 }
 
