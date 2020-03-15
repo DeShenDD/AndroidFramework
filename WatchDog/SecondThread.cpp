@@ -2,38 +2,39 @@
 #include <thread>
 #include <mutex>
 #include <unistd.h>
-#include "include/MainThread.h"
+#include "include/SecondThread.h"
 #include "include/WatchDog.h"
 
 using namespace std;
 
 static std::mutex mMutex;
 
-void MainThread::MainTest()
+void SecondThread::MainTest()
 {
     while(1)
     {
         sleep(5);
-        cout << "MainThread" << endl;
+        cout << "SecondThread" << endl;
         mMutex.lock();
-        sleep(30);
+        sleep(10);
         mMutex.unlock();
+        sleep(30);
     }
 }
 
-MainThread::MainThread()
+SecondThread::SecondThread()
 {
-    thread test(&MainThread::MainTest, this);
+    thread test(&SecondThread::MainTest, this);
     test.detach();
  
     WatchDog::getInstance()->addMonitor(this);
 }
 
 
-void MainThread::checkMonitor()
+void SecondThread::checkMonitor()
 {
     mMutex.lock();
-    cout<<"CheckMonitor"<<endl;
+    cout<<"CheckMonitor2"<<endl;
     mMutex.unlock();
-    cout<<"CheckMonitorUnlock"<<endl;
+    cout<<"CheckMonitorUnlock2"<<endl;
 }

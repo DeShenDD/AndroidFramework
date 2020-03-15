@@ -19,7 +19,7 @@ int Monitor::getState(int flag)
     } else {
         long long endTime = time(NULL);
         long long latency = endTime - mStartTime;
-        cout << latency <<endl;
+        cout << latency <<"  "<<mStartTime<<endl;
         if (latency < mWaitTime/2) {
             return WAITING;
         } else if (latency < mWaitTime) {

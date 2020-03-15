@@ -3,10 +3,13 @@
 
 #include <iostream>
 #include <vector>
+#include <thread>
+#include <mutex>
 #include "Monitor.h"
 //#include "Handler.h"
 #include "state.h"
 
+static std::mutex g_Mutex;
 
 class WatchDog {
 
@@ -14,7 +17,11 @@ public:
 
     static WatchDog* getInstance() {
         if (mWatchDog == nullptr) {
-            mWatchDog = new WatchDog();
+            g_Mutex.lock();
+            if (mWatchDog == nullptr) {
+                mWatchDog = new WatchDog();
+            }
+            g_Mutex.unlock();
         }
 
         return mWatchDog;
@@ -26,7 +33,7 @@ public:
 private:
 
     WatchDog();
-    ~WatchDog() {}
+    ~WatchDog();
 
     static WatchDog* mWatchDog;
 
