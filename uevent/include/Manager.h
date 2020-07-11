@@ -3,6 +3,7 @@
 
 #include "Uevent.h"
 #include "ManagerInterface.h"
+#include "Parse.h"
 
 class Manager : public ManagerInterface {
 
@@ -10,12 +11,13 @@ private:
     int initConnection();
     Manager();
     ~Manager() override;
-    std::string parse(std::string &str);
+    struct ueventInfo* parse(char *str);
     int mSock;
     Uevent* mUevent;
+    Parse* mParse;
 
 public:
-    void notify(std::string &str) override;
+    void notify(char* str) override;
     static Manager* create();
     void unregister();
     void enregister();

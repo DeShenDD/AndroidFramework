@@ -63,17 +63,21 @@ void Uevent::AddObserver(ManagerInterface* observer)
 void Uevent::notifyChanged(char* str)
 {
     if (!str) return;
-    string notifyStr;
+    /*string notifyStr;
     int i = 0;
     while((*str)!='\0')
     {
+        cout<<*str<<endl;
         notifyStr[i] = *str;
+        cout<<i<<endl;
+        i++;
+        cout<<i<<endl;
         str++;
-    }
+    }*/
     for(auto observer : mObserver)
     {
         cout<<"observer: "<<observer<<endl;
-        observer->notify(notifyStr);
+        observer->notify(str);
     }
 }
 

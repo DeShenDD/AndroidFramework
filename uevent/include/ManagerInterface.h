@@ -8,7 +8,7 @@ class ManagerInterface {
 public:
     ManagerInterface() {};
     virtual ~ManagerInterface() {};
-    virtual void notify(std::string &str) = 0;
+    virtual void notify(char* str) = 0;
 
 };
 

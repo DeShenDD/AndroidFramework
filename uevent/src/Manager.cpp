@@ -50,6 +50,7 @@ Manager* Manager::create()
 Manager::Manager()
 {
     mUevent = new Uevent();
+    mParse = new Parse();
     enregister();
 }
 
@@ -58,6 +59,8 @@ Manager::~Manager()
     unregister();
     close(mSock);
     unlink(UDP_SOCKET);
+    delete mUevent;
+    delete mParse;
 }
 
 void Manager::enregister()
@@ -70,16 +73,21 @@ void Manager::unregister()
     mUevent->removeObserver(this);
 }
 
-void Manager::notify(string &str)
+void Manager::notify(char* str)
 {
-    string parseString;
-    parseString = parse(str);
-    cout<<"info "<<parseString<<"socket: "<<mSock<<endl;
-    sendto(mSock, parseString.c_str(), strlen(parseString.c_str())+1,
+    char* parseString;
+    parseString = (char*)(parse(str));
+    if(!parseString) { cout<<"parse is null"<<endl; return; }
+    cout<<"info "<<str<<" parse: "<<parseString<<endl;
+    sendto(mSock, parseString, strlen(parseString)+1,
             0, (struct sockaddr*)&addr, sizeof(struct sockaddr_un));
 }
 
-string  Manager::parse(string &str)
+struct ueventInfo* Manager::parse(char* str)
 {
-    return str;
+    if(!str) return NULL;
+
+    struct ueventInfo parse;
+    mParse->parseInfo(str, &parse);
+    return &parse;
 }
