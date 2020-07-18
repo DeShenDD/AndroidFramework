@@ -32,8 +32,8 @@ $(Obj): %.o:%.cpp
 
 $(Client): $(ClientObj)
 	$(COMPILE) -o $(@) $(CFLAGS) $^
-$(ClientSrc) : %.o:%.cpp
+$(ClientObj): %.o:%.cpp
 	$(COMPILE) -c $(CFLAGS)  $< -o $@ 
 
 clean:
-	rm -r $(BUILDFILE)
+	rm -r $(BUILDFILE) $(ClientObj) $(Obj)
